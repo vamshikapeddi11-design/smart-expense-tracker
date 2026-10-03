@@ -1,0 +1,113 @@
+# ==============================================================================
+# Smart Expense Tracker — local development stack
+#
+# Services:
+#   db         PostgreSQL 16, the application's database (port 5432)
+#   ml-service ML categorisation API, built from ./ml-service (port 8000)
+#   backend    Spring Boot API, built from ./backend (port 8080)
+#   frontend   Vite dev server, built from ./frontend (port 5173)
+#
+# Secrets come from a .env file (see .env.example) — never commit real values.
+#
+# Quick start:
+#   cp .env.example .env        # fill in the three values
+#   docker compose up --build
+#   # optional: load demo data
+#   docker compose exec -T db psql -U $POSTGRES_USER -d expensetracker \
+#       -f /docker-entrypoint-initdb.d/seed.sql
+# ==============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Database — waits for healthcheck before the backend starts (depends_on below)
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16
+    container_name: expense-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: expensetracker
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Mount seed data next to the init dir so it can be loaded manually;
+      # sql/schema.sql (another module) is the authoritative DDL.
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      # pg_isready returns 0 when postgres accepts connections.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d expensetracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # ML service — FastAPI categorisation model (trains at image build time)
+  # ---------------------------------------------------------------------------
+  ml-service:
+    build: ./ml-service
+    container_name: expense-ml
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Backend — Spring Boot API (com.expensetracker, port 8080)
+  # ---------------------------------------------------------------------------
+  backend:
+    build: ./backend
+    container_name: expense-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # JDBC URL pointing at the db service by its compose hostname.
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/expensetracker
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      # Where the backend calls the ML service inside the compose network.
+      ML_SERVICE_URL: http://ml-service:8000
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+      ml-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+
+  # ---------------------------------------------------------------------------
+  # Frontend — Vite dev server with hot reload (port 5173)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build: ./frontend
+    container_name: expense-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      # URL the browser uses to reach the backend API.
+      VITE_API_URL: http://localhost:8080
+    volumes:
+      # Bind-mount source for instant hot-reload feedback in dev.
+      - ./frontend/src:/app/src
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  pgdata:
+    # Named volume keeps the database data across `docker compose down`.

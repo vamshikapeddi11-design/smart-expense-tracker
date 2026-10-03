@@ -1,0 +1,59 @@
+{
+  "account": {
+    "accountId": "MOCK-ACC-001",
+    "maskedNumber": "XXXX1234",
+    "bankName": "Mock Bank"
+  },
+  "transactions": [
+    {
+      "txnId": "MOCK-TXN-001",
+      "date": "2026-10-01",
+      "amount": 450.00,
+      "type": "DEBIT",
+      "merchant": "Swiggy",
+      "vpa": "swiggy@mock",
+      "note": "Food order",
+      "balance": 45550.00
+    },
+    {
+      "txnId": "MOCK-TXN-002",
+      "date": "2026-10-01",
+      "amount": 7000.00,
+      "type": "DEBIT",
+      "merchant": "House Rent",
+      "vpa": null,
+      "note": "Monthly rent",
+      "balance": 38550.00
+    },
+    {
+      "txnId": "MOCK-TXN-003",
+      "date": "2026-10-01",
+      "amount": 1200.00,
+      "type": "DEBIT",
+      "merchant": "Amazon",
+      "vpa": "amazon@mock",
+      "note": "Shopping",
+      "balance": 37350.00
+    },
+    {
+      "txnId": "MOCK-TXN-004",
+      "date": "2026-10-02",
+      "amount": 300.00,
+      "type": "DEBIT",
+      "merchant": "Metro",
+      "vpa": "metro@mock",
+      "note": "Transport",
+      "balance": 37050.00
+    },
+    {
+      "txnId": "MOCK-TXN-005",
+      "date": "2026-10-02",
+      "amount": 649.00,
+      "type": "DEBIT",
+      "merchant": "Netflix",
+      "vpa": "netflix@mock",
+      "note": "Subscription",
+      "balance": 36401.00
+    }
+  ]
+}
