@@ -23,7 +23,6 @@ smart-expense-tracker/
 ├── API.md                     # REST endpoint reference with JSON samples
 └── sql/
     ├── schema.sql             # PostgreSQL DDL (all tables + category seed)
-    └── seed.sql               # Demo user and sample data (demo@example.com / demo1234)
 ```
 
 > Note: the `sql/` directory and other modules' source files (backend, ML service, frontend) are produced by the respective modules of this project. The documentation files here describe the agreed shared contract.
