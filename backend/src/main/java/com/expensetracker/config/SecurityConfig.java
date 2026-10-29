@@ -54,9 +54,9 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
-                "https://smart-expense-tracker-lake-kappa.vercel.app"
-        ));
-
+    "https://smart-expense-tracker-lake-kappa.vercel.app",
+    "https://smart-expense-tracker-f3z8g72fm-peddi-vamshika-s-projects.vercel.app"
+));
         config.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
