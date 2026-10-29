@@ -3,7 +3,8 @@
 // ---------------------------------------------------------------------------
 
 export const API_URL =
-  import.meta.env.API_URL || "http://localhost:8080";
+  import.meta.env.API_URL ||
+  "https://smart-expense-trackerr-187u.onrender.com";
 
 export const ML_URL =
   import.meta.env.VITE_ML_URL || "http://localhost:8000";
